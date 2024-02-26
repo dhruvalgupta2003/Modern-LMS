@@ -202,7 +202,7 @@ export const updateAccessToken = CatchAsyncError(
 
       const session = await redis.get(decoded.id as string);
       if (!session) {
-        return next(new ErrorHandler(message, 400));
+        return next(new ErrorHandler("Please login to access this resources!", 400));
       }
 
       const user = JSON.parse(session);
@@ -222,7 +222,9 @@ export const updateAccessToken = CatchAsyncError(
       req.user = user;
 
       res.cookie("access_token", accessToken, accessTokenOptions);
-      res.cookie("access_token", refreshToken, refreshTokenOptions);
+      res.cookie("refresh_token", refreshToken, refreshTokenOptions);
+
+      await redis.set(user._id, JSON.stringify(user),"EX",604800); // 7 Days
 
       res.status(200).json({
         status: "success",
@@ -278,17 +280,9 @@ interface IUpdateUserInfo {
 export const updateUserInfo = CatchAsyncError(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { name, email } = req.body as IUpdateUserInfo;
+      const { name } = req.body as IUpdateUserInfo;
       const userId = req.user?._id;
       const user = await userModel.findById(userId);
-
-      if (email && user) {
-        const isEmailExists = await userModel.findOne({ email });
-        if (isEmailExists) {
-          return next(new ErrorHandler("Email already exist", 400));
-        }
-        user.email = email;
-      }
 
       if (name && user) {
         user.name = name;

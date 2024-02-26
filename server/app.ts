@@ -8,6 +8,7 @@ import courseRouter from './routes/course.route';
 import orderRouter from './routes/order.route';
 import notificationRouter from './routes/notification.route';
 import analyticsRouter from './routes/analytics.route';
+import layoutRouter from './routes/layout.route';
 
 require('dotenv').config();
 
@@ -19,11 +20,12 @@ app.use(cookieParser());
 
 //cors(cross origin resourse sharing)
 app.use(cors({
-    origin:process.env.ORIGIN
+    origin:["http://localhost:3000"],
+    credentials: true,
 }));
 
 // routes
-app.use('/api/v1',userRouter,courseRouter,orderRouter,notificationRouter,analyticsRouter);
+app.use('/api/v1',userRouter,courseRouter,orderRouter,notificationRouter,analyticsRouter,layoutRouter);
 
 
 //testing api 
